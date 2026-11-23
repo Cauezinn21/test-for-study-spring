@@ -6,9 +6,6 @@ import com.caue.testforstudy.entity.User;
 import com.caue.testforstudy.entitymapper.UserMapper;
 import com.caue.testforstudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,13 +13,11 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
 
-    public ResponseEntity<UserResponseDto> save(UserRequestDto userRequestDto){
+    public UserResponseDto save(UserRequestDto userRequestDto){
         User user = UserMapper.forEntity(userRequestDto);
 
         User saved = userRepository.save(user);
 
-        UserResponseDto userResponseDto = UserMapper.forResponse(saved);
-
-        return ResponseEntity.status(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body(userResponseDto);
+        return UserMapper.forResponse(saved);
     }
 }

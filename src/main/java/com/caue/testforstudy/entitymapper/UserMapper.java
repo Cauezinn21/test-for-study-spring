@@ -15,4 +15,7 @@ public class UserMapper {
     public static UserResponseDto forResponse(User user){
         return new UserResponseDto(user.getId(), user.getName(), user.getEmail(), user.getCreated_at());
     }
+    public static UserRequestDto forRequest(User user){
+        return new UserRequestDto(user.getName(), user.getEmail());
+    }
 }

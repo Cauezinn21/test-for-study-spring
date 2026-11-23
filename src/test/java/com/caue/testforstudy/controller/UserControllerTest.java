@@ -39,8 +39,7 @@ class UserControllerTest {
         UserResponseDto userResponseDto = new UserResponseDto(1L, userRequestDto.name(), userRequestDto.email(), LocalDateTime.now());
         String string = objectMapper.writeValueAsString(userRequestDto);
         Mockito.when(userService.save(Mockito.any(UserRequestDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
-                        .body(userResponseDto));
+                .thenReturn(userResponseDto);
 
         mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(string))
                 .andExpect(status().isCreated())
