@@ -4,7 +4,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 .env
-
+ANALISE_TESTES.md
+learn.txt.txt
 ### STS ###
 .apt_generated
 .classpath

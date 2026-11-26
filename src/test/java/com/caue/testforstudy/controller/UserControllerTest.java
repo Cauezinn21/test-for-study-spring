@@ -3,51 +3,89 @@ package com.caue.testforstudy.controller;
 import com.caue.testforstudy.dto.UserRequestDto;
 import com.caue.testforstudy.dto.UserResponseDto;
 import com.caue.testforstudy.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import tools.jackson.databind.ObjectMapper;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
 
-@WebMvcTest
+@WebMvcTest(UserController.class)
 class UserControllerTest {
 
     @MockitoBean
     UserService userService;
 
     @Autowired
-    MockMvc mockMvc;
+    MockMvcTester mockMvcTester;
 
     @Autowired
     ObjectMapper objectMapper;
 
+    UserResponseDto userResponseDto;
+
+    @BeforeEach
+    void setUp(){
+        userResponseDto = new UserResponseDto(1L, "Cauê", "caue@gmail.com", LocalDateTime.of(2026, 11,25, 19, 45));
+    }
+
     @Test
-    void shouldCreateUser() throws Exception {
+    void shouldCreateUser(){
 
         UserRequestDto userRequestDto = new UserRequestDto("Cauê", "caue@gmail.com");
-        UserResponseDto userResponseDto = new UserResponseDto(1L, userRequestDto.name(), userRequestDto.email(), LocalDateTime.now());
-        String string = objectMapper.writeValueAsString(userRequestDto);
-        Mockito.when(userService.save(Mockito.any(UserRequestDto.class)))
-                .thenReturn(userResponseDto);
 
-        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(string))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("Cauê"))
-                .andExpect(jsonPath("$.email").value("caue@gmail.com"))
-                .andExpect(jsonPath("$.created_at").exists());
+        given(userService.save(any(UserRequestDto.class))).willReturn(userResponseDto);
 
-        Mockito.verify(userService, Mockito.times(1)).save(Mockito.any(UserRequestDto.class));
+        var request = mockMvcTester.post()
+                .uri("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userRequestDto));
+
+        assertThat(request).hasStatus(HttpStatus.CREATED)
+                .bodyJson()
+                .isEqualTo(objectMapper.writeValueAsString(userResponseDto));
+
+        then(userService).should().save(userRequestDto);
+
     }
+    @Test
+    void  shouldReturnBadRequestWhenNameIsBlank(){
+
+        UserRequestDto userRequestDto = new UserRequestDto("", "caue@gmail.com");
+
+        var request = mockMvcTester.post()
+                .uri("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userRequestDto));
+
+        assertThat(request).hasStatus(HttpStatus.BAD_REQUEST);
+
+        then(userService).shouldHaveNoInteractions();
+
+    }
+    @Test
+    void shouldFindUserById(){
+
+        given(userService.findById(1L)).willReturn(userResponseDto);
+
+        var request = mockMvcTester.get().uri("/users/{id}", 1L);
+
+        assertThat(request).hasStatus(HttpStatus.OK)
+                        .bodyJson()
+                                .isEqualTo(objectMapper.writeValueAsString(userResponseDto));
+
+        then(userService).should().findById(1L);
+    }
+
 }

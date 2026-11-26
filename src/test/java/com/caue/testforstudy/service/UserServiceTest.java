@@ -43,10 +43,14 @@ class UserServiceTest {
 
         // Assertions :
         assertThat(save.name())
-                .isEqualTo("Cauê");
+                .isEqualTo("Cauê")
+                .isNotEmpty()
+                .isNotBlank();
 
         assertThat(save.id())
                 .isNotNull();
 
     }
+
+
 }

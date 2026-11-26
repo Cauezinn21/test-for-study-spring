@@ -14,10 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserRepositoryTest {
     @Autowired
     UserRepository userRepository;
-    @BeforeEach
-    void setUp(){
-        userRepository.deleteAll();
-    }
+
     @Test
     @DisplayName("Should save user in database")
     void shouldSaveUser(){
